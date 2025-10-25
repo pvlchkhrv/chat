@@ -1,12 +1,12 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
-import { Observable, merge } from 'rxjs';
-import { collection, query, orderBy, limit } from 'firebase/firestore';
-import { collectionData } from 'rxfire/firestore';
-import { map } from 'rxjs/operators';
+import { computed, inject, Injectable, signal } from '@angular/core';
+import { addDoc, collection, limit, orderBy, query } from 'firebase/firestore';
 import { connect } from 'ngxtension/connect';
+import { collectionData } from 'rxfire/firestore';
+import { catchError, defer, exhaustMap, merge, Observable, of, Subject, } from 'rxjs';
+import { ignoreElements, map } from 'rxjs/operators';
+import { FIRESTORE } from '../../app.config';
 
 import { Message } from '../interfaces/message';
-import { FIRESTORE } from '../../app.config';
 
 interface MessageState {
   messages: Message[];
@@ -20,7 +20,8 @@ export class MessageService {
   private firestore = inject(FIRESTORE);
 
   // sources
-  messages$ = this.getMessages();
+  private messages$ = this.getMessages();
+  add$ = new Subject<Message['content']>();
 
   // state
   private state = signal<MessageState>({
@@ -35,7 +36,12 @@ export class MessageService {
   constructor() {
     // reducers
     const nextState$ = merge(
-      this.messages$.pipe(map((messages) => ({ messages })))
+      this.messages$.pipe(map((messages) => ({ messages }))),
+      this.add$.pipe(
+        exhaustMap(message => this.addMessage(message)),
+        ignoreElements(),
+        catchError(error => of(({ error })))
+      )
     );
 
     connect(this.state).with(nextState$);
@@ -52,5 +58,16 @@ export class MessageService {
     return collectionData(messagesCollection, { idField: 'id' }).pipe(
       map((messages) => [...messages].reverse())
     ) as Observable<Message[]>;
+  }
+
+  private addMessage(message: string) {
+    const newMessage: Message = {
+      author: 'me@test.com',
+      content: message,
+      created: Date.now().toString(),
+    };
+
+    const messagesCollection = collection(this.firestore, 'messages');
+    return defer(() => addDoc(messagesCollection, newMessage));
   }
 }
