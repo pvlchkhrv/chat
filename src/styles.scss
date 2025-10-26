@@ -37,3 +37,59 @@ body {
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+.container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.gradient-bg {
+  background: linear-gradient(
+      138deg,
+      var(--primary-darker-color) 0%,
+      var(--primary-color) 100%
+  );
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+@keyframes animateInPrimary {
+  0% {
+    transform: translate3d(-100%, 0, 0);
+  }
+
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes animateInSecondary {
+  0% {
+    opacity: 0;
+  }
+
+  50% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+.animate-in-primary {
+  animation: animateInPrimary;
+  animation: animateInPrimary;
+  animation-duration: 750ms;
+}
+
+.animate-in-secondary {
+  animation: animateInSecondary ease-in 1;
+  animation: animateInSecondary ease-in 1;
+  animation-duration: 750ms;
+}

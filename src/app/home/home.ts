@@ -24,11 +24,34 @@ import { MessageList } from './ui/message-list';
         </button>
       </mat-toolbar>
 
-      <app-message-list [messages]="messageService.messages()"/>
+      <app-message-list [activeUser]="authService.user()" [messages]="messageService.messages()"/>
       <app-message-input (send)="messageService.add$.next($event)"/>
     </div>
   `,
-  styles: ``,
+  styles: [
+    `
+      .container {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 100%;
+      }
+
+      mat-toolbar {
+        box-shadow: 0px -7px 11px 0px var(--accent-color);
+      }
+
+      app-message-list {
+        height: 100%;
+        width: 100%;
+      }
+
+      app-message-input {
+        position: fixed;
+        bottom: 0;
+      }
+    `,
+  ],
 })
 export default class Home {
   readonly messageService = inject(MessageService);
