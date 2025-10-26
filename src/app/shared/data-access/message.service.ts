@@ -2,7 +2,7 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 import { addDoc, collection, limit, orderBy, query } from 'firebase/firestore';
 import { connect } from 'ngxtension/connect';
 import { collectionData } from 'rxfire/firestore';
-import { catchError, defer, exhaustMap, merge, Observable, of, Subject, } from 'rxjs';
+import { catchError, defer, exhaustMap, filter, merge, Observable, of, retry, Subject, } from 'rxjs';
 import { ignoreElements, map } from 'rxjs/operators';
 import { FIRESTORE } from '../../app.config';
 
@@ -17,12 +17,17 @@ interface MessageState {
 @Injectable({
   providedIn: 'root',
 })
-export class MessageService {
+class MessageService {
   private firestore = inject(FIRESTORE);
   private authService = inject(AuthService);
 
   // sources
-  private messages$ = this.getMessages();
+  messages$ = this.getMessages().pipe(
+    // restart stream when user reauthenticates
+    retry({
+      delay: () => this.authUser$.pipe(filter((user) => !!user)),
+    })
+  );
   add$ = new Subject<Message['content']>();
 
   // state
@@ -34,6 +39,7 @@ export class MessageService {
   // selectors
   messages = computed(() => this.state().messages);
   error = computed(() => this.state().error);
+  private authUser$: any;
 
   constructor() {
     // reducers
@@ -55,7 +61,6 @@ export class MessageService {
       orderBy('created', 'desc'),
       limit(50)
     );
-    console.log(messagesCollection)
 
     return collectionData(messagesCollection, { idField: 'id' }).pipe(
       map((messages) => [...messages].reverse())
@@ -73,3 +78,5 @@ export class MessageService {
     return defer(() => addDoc(messagesCollection, newMessage));
   }
 }
+
+export default MessageService

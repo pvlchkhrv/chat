@@ -58,9 +58,9 @@ import { passwordMatchesValidator } from '../utils/password-matches';
         }
       </mat-form-field>
 
-      @if (status() === 'error') {
+      @if (status() === 'error'){
         <mat-error>Could not create account with those details.</mat-error>
-      } @else if (status() === 'creating') {
+      } @else if(status() === 'creating'){
         <mat-spinner diameter="50"></mat-spinner>
       }
 

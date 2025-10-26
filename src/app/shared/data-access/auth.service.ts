@@ -29,7 +29,7 @@ export class AuthService {
 
   // state
   private state = signal<AuthState>({
-    user: null,
+    user: undefined,
   });
 
   // selectors
